@@ -1,0 +1,93 @@
+<section class="phx-hero">
+  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
+  <p>Peace of mind from prototype to production</p>
+
+  <form phx-change="suggest" phx-submit="search">
+    <input type="text" name="q" value="<%= @query %>" placeholder="Live dependency search" list="results" autocomplete="off"/>
+    <datalist id="results">
+      <%= for {app, _vsn} <- @results do %>
+        <option value="<%= app %>"><%= app %></option>
+      <% end %>
+    </datalist>
+    <button type="submit" phx-disable-with="Searching...">Go to Hexdocs</button>
+  </form>
+</section>
+
+<section class="phx-hero">
+  <h1>Here is your result</h1>
+  <p>...</p>
+
+  <div>
+    <%= @query %>
+  </div>
+</section>
+
+<section class="phx-hero">
+  <div>
+    <button phx-click="choose" type="button" name="11" value="11">
+      <%= @values["11"] %>
+    </button>
+    <button phx-click="choose" type="button" name="12" value="12">
+      <%= @values["12"] %>
+    </button>
+    <button phx-click="choose" type="button" name="13" value="13">
+      <%= @values["13"] %>
+    </button>
+  </div>
+  <div>
+    <button phx-click="choose" type="button" name="21" value="21">
+      <%= @values["21"] %>
+    </button>
+    <button phx-click="choose" type="button" name="22" value="22">
+      <%= @values["22"] %>
+    </button>
+    <button phx-click="choose" type="button" name="23" value="23">
+      <%= @values["23"] %>
+    </button>
+  </div>
+  <div>
+    <button phx-click="choose" type="button" name="31" value="31">
+      <%= @values["31"] %>
+    </button>
+    <button phx-click="choose" type="button" name="32" value="32">
+      <%= @values["32"] %>
+    </button>
+    <button phx-click="choose" type="button" name="33" value="33">
+      <%= @values["33"] %>
+    </button>
+  </div>
+</section>
+
+<section class="row">
+  <article class="column">
+    <h2>Resources</h2>
+    <ul>
+      <li>
+        <a href="https://hexdocs.pm/phoenix/overview.html">Guides &amp; Docs</a>
+      </li>
+      <li>
+        <a href="https://github.com/phoenixframework/phoenix">Source</a>
+      </li>
+      <li>
+        <a href="https://github.com/phoenixframework/phoenix/blob/v1.5/CHANGELOG.md">v1.5 Changelog</a>
+      </li>
+    </ul>
+  </article>
+  <article class="column">
+    <h2>Help</h2>
+    <ul>
+      <li>
+        <a href="https://elixirforum.com/c/phoenix-forum">Forum</a>
+      </li>
+      <li>
+        <a href="https://webchat.freenode.net/?channels=elixir-lang">#elixir-lang on Freenode IRC</a>
+      </li>
+      <li>
+        <a href="https://twitter.com/elixirphoenix">Twitter @elixirphoenix</a>
+      </li>
+      <li>
+        <a href="https://elixir-slackin.herokuapp.com/">Elixir on Slack</a>
+      </li>
+    </ul>
+  </article>
+</section>
