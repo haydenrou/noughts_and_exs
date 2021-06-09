@@ -1,11 +1,29 @@
 defmodule NoughtsAndExsWeb.PageLive do
   use NoughtsAndExsWeb, :live_view
 
+  @solutions [
+    [{1, 1}, {1, 2}, {1, 3}],
+    [{2, 1}, {2, 2}, {2, 3}],
+    [{3, 1}, {3, 2}, {3, 3}]
+  ]
+
+  def generate_solutions() do
+    # TODO: What do we do about the anti-diagonal?
+    Enum.map([1, 2, 3], fn row -> Enum.map([1, 2, 3], fn x -> {row, x} end) end) ++
+      Enum.map([1, 2, 3], fn column -> Enum.map([1, 2, 3], fn x -> {x, column} end) end) ++
+      [Enum.map([1, 2, 3], fn x -> {x, x} end)] ++
+      []
+  end
+
+  def stringify([{_x1, _y1}, {_x2, _y2}, {_x3, _y3}] = list) do
+    Enum.map(list, fn {x, y} -> Integer.to_string(x) <> Integer.to_string(y) end)
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     Phoenix.PubSub.subscribe(NoughtsAndExs.PubSub, "query")
     Phoenix.PubSub.subscribe(NoughtsAndExs.PubSub, "game")
-    {:ok, assign(socket, query: "", results: %{}, values: %{})}
+    {:ok, assign(socket, query: "", winner: nil, results: %{}, values: %{})}
   end
 
   # @impl true
@@ -17,9 +35,37 @@ defmodule NoughtsAndExsWeb.PageLive do
   @impl true
   def handle_info({:choose, value}, socket) do
     current_values = socket.assigns.values
-    new_current_values = Map.put(current_values, value, "X")
+
+    symbol =
+      case Enum.count(current_values) |> rem(2) do
+        0 -> "X"
+        1 -> "O"
+      end
+
+    new_current_values = Map.put(current_values, value, symbol)
     socket = assign(socket, values: new_current_values)
-    IO.inspect socket
+    IO.inspect(socket)
+
+    winning_symbol =
+      Enum.map(@solutions, fn solution ->
+        s = stringify(solution)
+        values = Map.take(new_current_values, s) |> Map.values()
+
+        cond do
+          values == ["X", "X", "X"] -> "X"
+          values == ["O", "O", "O"] -> "O"
+          true -> nil
+        end
+      end)
+      |> Enum.reduce(fn value, acc ->
+        case value do
+          "X" -> value
+          "O" -> value
+          _ -> acc
+        end
+      end)
+
+    socket = assign(socket, winner: winning_symbol)
     {:noreply, socket}
   end
 
