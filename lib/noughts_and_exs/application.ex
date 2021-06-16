@@ -12,9 +12,10 @@ defmodule NoughtsAndExs.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: NoughtsAndExs.PubSub},
       # Start the Endpoint (http/https)
-      NoughtsAndExsWeb.Endpoint
+      NoughtsAndExsWeb.Endpoint,
       # Start a worker by calling: NoughtsAndExs.Worker.start_link(arg)
       # {NoughtsAndExs.Worker, arg}
+      {MyTracker, [name: MyTracker, pubsub_server: NoughtsAndExs.PubSub]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

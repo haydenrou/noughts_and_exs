@@ -1,18 +1,11 @@
 defmodule NoughtsAndExsWeb.PageLive do
   use NoughtsAndExsWeb, :live_view
 
-  @solutions [
-    [{1, 1}, {1, 2}, {1, 3}],
-    [{2, 1}, {2, 2}, {2, 3}],
-    [{3, 1}, {3, 2}, {3, 3}]
-  ]
-
-  def generate_solutions() do
-    # TODO: What do we do about the anti-diagonal?
+  def solutions() do
     Enum.map([1, 2, 3], fn row -> Enum.map([1, 2, 3], fn x -> {row, x} end) end) ++
       Enum.map([1, 2, 3], fn column -> Enum.map([1, 2, 3], fn x -> {x, column} end) end) ++
-      [Enum.map([1, 2, 3], fn x -> {x, x} end)] ++
-      []
+        [Enum.map([1, 2, 3], fn x -> {x, x} end)] ++
+          [Enum.map([1, 2, 3], fn x -> {x, 4 - x} end)]
   end
 
   def stringify([{_x1, _y1}, {_x2, _y2}, {_x3, _y3}] = list) do
@@ -23,14 +16,11 @@ defmodule NoughtsAndExsWeb.PageLive do
   def mount(_params, _session, socket) do
     Phoenix.PubSub.subscribe(NoughtsAndExs.PubSub, "query")
     Phoenix.PubSub.subscribe(NoughtsAndExs.PubSub, "game")
+    Phoenix.PubSub.broadcast(NoughtsAndExs.PubSub, "joined", :joined)
+    Phoenix.PubSub.subscribe(NoughtsAndExs.PubSub, "joined")
+
     {:ok, assign(socket, query: "", winner: nil, results: %{}, values: %{})}
   end
-
-  # @impl true
-  # def handle_info(query, socket) do
-  #   socket = assign(socket, query: query)
-  #   {:noreply, socket}
-  # end
 
   @impl true
   def handle_info({:choose, value}, socket) do
@@ -44,10 +34,9 @@ defmodule NoughtsAndExsWeb.PageLive do
 
     new_current_values = Map.put(current_values, value, symbol)
     socket = assign(socket, values: new_current_values)
-    IO.inspect(socket)
 
     winning_symbol =
-      Enum.map(@solutions, fn solution ->
+      Enum.map(solutions(), fn solution ->
         s = stringify(solution)
         values = Map.take(new_current_values, s) |> Map.values()
 
@@ -66,6 +55,23 @@ defmodule NoughtsAndExsWeb.PageLive do
       end)
 
     socket = assign(socket, winner: winning_symbol)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(:joined, socket) do
+    Phoenix.PubSub.broadcast(NoughtsAndExs.PubSub, "game", {:populate, socket.assigns.values})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:populate, values}, socket) do
+    {:noreply, assign(socket, values: values)}
+  end
+
+  @impl true
+  def handle_info(query, socket) do
+    socket = assign(socket, query: query)
     {:noreply, socket}
   end
 
